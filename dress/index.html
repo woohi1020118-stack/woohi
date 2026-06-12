@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>우히</title>
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --mint:#8FBCF2; --mint-light:#DCEBFF; --mint-pale:#EFF5FF;
+    --mint-dark:#1599f0; --mint-deep:#0455DC;
+    --lavender:#C5B8F0; --lavender-light:#EBE6FF;
+    --white:#FFFFFF; --gray-100:#F7F7F7; --gray-200:#EEEEEE;
+    --gray-400:#BBBBBB; --text:#1C1C2E; --text-muted:#6B7280;
+  }
+  html { scroll-behavior:smooth; }
+  body { font-family:'Pretendard',sans-serif; background:var(--white); color:var(--text); }
+  .nav { position:sticky; top:0; z-index:50; background:rgba(255,255,255,.92); backdrop-filter:blur(12px); border-bottom:1px solid var(--gray-200); height:56px; }
+  .nav-inner { max-width:1000px; margin:0 auto; padding:0 40px; height:100%; display:flex; align-items:center; gap:16px; }
+  .nav-back { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text-muted); text-decoration:none; transition:color .2s; }
+  .nav-back::before { content:'←'; }
+  .nav-back:hover { color:var(--mint-deep); }
+  .nav-dot { width:5px; height:5px; border-radius:50%; background:var(--mint); }
+  /* 우측 nav 링크 */
+  .nav-links { display:flex; align-items:center; gap:4px; margin-left:auto; }
+  .nav-link {
+    padding:5px 13px; border-radius:20px; font-size:12px; font-weight:600;
+    text-decoration:none; transition:all .18s;
+    color:var(--text-muted); background:none; border:1.5px solid transparent;
+  }
+  .nav-link:hover { color:var(--mint-deep); background:var(--mint-pale); border-color:var(--mint); }
+  .nav-link.active { color:var(--mint-deep); background:var(--mint-pale); border-color:var(--mint); }
+  @media(max-width:768px) {
+    .nav-links { gap:2px; }
+    .nav-link { padding:4px 8px; font-size:11px; }
+  }
+  .nav-title { font-family:'Pretendard',serif; font-size:16px; }
+  .page-wrap { max-width:1000px; margin:0 auto; padding:0 40px 80px; }
+  .page-header { padding:44px 0 28px; }
+  .page-eyebrow { font-size:11px; font-weight:500; color:var(--mint-dark); letter-spacing:.25em; text-transform:uppercase; margin-bottom:8px; opacity:.75; }
+  .page-title { font-family:'Pretendard',serif; font-size:36px; color:var(--text); margin-bottom:6px; }
+  .page-sub { font-size:13px; color:var(--text-muted); line-height:1.7; }
+  .cat-tabs { display:flex; gap:8px; margin-bottom:36px; flex-wrap:wrap; }
+  .cat-tab { padding:8px 20px; border-radius:20px; border:1.5px solid var(--gray-200); background:var(--white); font-size:13px; font-weight:500; color:var(--text-muted); cursor:pointer; font-family:inherit; transition:all .18s; }
+  .cat-tab:hover { border-color:var(--mint); color:var(--mint-deep); }
+  .cat-tab.active { background:var(--mint-pale); border-color:var(--mint); color:var(--mint-deep); font-weight:700; }
+  .section { margin-bottom:52px; }
+  .section.hidden { display:none; }
+  .section-head { display:flex; align-items:center; gap:12px; margin-bottom:20px; padding-bottom:12px; border-bottom:2px solid var(--mint-light); }
+  .section-icon { font-size:20px; }
+  .section-title { font-family:'Pretendard',serif; font-size:22px; color:var(--text); }
+  .section-count { font-size:11px; background:var(--mint-pale); color:var(--mint-deep); padding:3px 10px; border-radius:20px; font-weight:600; border:1px solid var(--mint); }
+  .item-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .item-grid.outfit-grid { grid-template-columns:repeat(4,1fr); }
+  @media(max-width:768px) {
+    .item-grid.outfit-grid { grid-template-columns:repeat(2,1fr); }
+  }
+  .item-card { background:var(--gray-100); border:1px solid var(--gray-200); border-radius:16px; overflow:hidden; transition:all .2s ease; cursor:pointer; }
+  .item-card:hover { transform:translateY(-4px); box-shadow:0 10px 28px rgba(0,0,0,.1); border-color:var(--mint); }
+  .item-img { width:100%; aspect-ratio:3/4; position:relative; overflow:hidden; background:var(--gray-200); display:flex; align-items:center; justify-content:center; font-size:32px; }
+  .item-img img { width:100%; height:100%; object-fit:cover; object-position:top center; display:block; transition:transform .3s ease; }
+  .item-card:hover .item-img img { transform:scale(1.04); }
+  .badge-wrap { position:absolute; bottom:8px; left:8px; display:flex; flex-direction:column; gap:4px; z-index:1; }
+  .badge { font-size:9px; font-weight:700; padding:2px 8px; border-radius:20px; white-space:nowrap; background:#FEF3C7; color:#92400E; border:1px solid #FDE68A; width:fit-content; }
+  .item-info { padding:12px 14px 14px; }
+  .item-name { font-size:13px; font-weight:700; color:var(--text); margin-bottom:4px; }
+  .item-desc { font-size:11px; color:var(--text-muted); line-height:1.5; }
+  /* 라이트박스 */
+  .lightbox { position:fixed; inset:0; background:rgba(0,0,0,.85); backdrop-filter:blur(8px); z-index:999; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .2s; }
+  .lightbox.open { opacity:1; pointer-events:all; }
+  .lightbox img { max-width:min(560px,90vw); max-height:85vh; border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,.5); transform:scale(.95); transition:transform .25s cubic-bezier(.34,1.56,.64,1); }
+  .lightbox.open img { transform:scale(1); }
+  .lightbox-close { position:absolute; top:20px; right:24px; color:white; font-size:32px; cursor:pointer; opacity:.7; line-height:1; }
+  .lightbox-close:hover { opacity:1; }
+  .lightbox-caption { position:absolute; bottom:24px; left:50%; transform:translateX(-50%); color:white; font-size:14px; font-weight:600; white-space:nowrap; background:rgba(0,0,0,.4); padding:6px 16px; border-radius:20px; }
+  /* 로딩 */
+  .spinner { width:28px; height:28px; border-radius:50%; border:3px solid var(--mint-light); border-top-color:var(--mint-dark); animation:spin .8s linear infinite; margin:60px auto; display:block; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @keyframes dress-event-glow {
+    0%,100% { box-shadow: var(--glow-off, 0 0 0 0 rgba(125,211,252,0)); }
+    50% { box-shadow: var(--glow-on, 0 0 14px 4px rgba(125,211,252,.4)); }
+  }
+  .item-card.is-event {
+    animation: fadeUp .4s ease forwards, dress-event-glow 2.5s ease-in-out 0.4s infinite;
+  }
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(16px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .item-card {
+    opacity:0;
+    animation: fadeUp .4s ease forwards;
+  }
+  footer { text-align:center; padding:40px 0 20px; font-size:12px; color:var(--gray-400); border-top:1px solid var(--gray-200); margin-top:20px; }
+  footer span { color:var(--mint-dark); }
+  @media (max-width:768px) {
+    .nav-inner, .page-wrap { padding-left:20px; padding-right:20px; }
+    .item-grid { grid-template-columns:repeat(2,1fr); gap:10px; }
+    .page-title { font-size:28px; }
+  }
+
+  /* ── 우측 세로 탭 내비 (우히) ── */
+  .page{display:grid;grid-template-columns:1fr 150px;gap:24px;max-width:1120px;margin:0 auto;padding:0 16px;align-items:start}
+  .main{min-width:0}
+  footer{grid-column:1/-1}
+  .rail{position:sticky;top:24px;align-self:start;padding-top:24px}
+  .rail-inner{position:relative;padding-right:14px}
+  .rail-inner::before{content:'';position:absolute;top:-8px;bottom:-8px;right:0;width:2.5px;background:var(--mint-deep);border-radius:2px}
+  .tab{display:block;margin:0 0 13px auto;width:100px;text-align:center;padding:10px 0;font-size:16px;font-weight:800;color:var(--mint-deep);text-decoration:none;background:#fff;position:relative;border:2.5px solid var(--mint-deep);border-radius:255px 15px 225px 15px/15px 225px 15px 255px;transition:transform .18s,background .18s}
+  .tab:nth-child(2n){border-radius:15px 225px 15px 255px/225px 15px 255px 15px}
+  .tab:nth-child(3n){border-radius:225px 15px 255px 15px/15px 255px 15px 225px}
+  .tab::after{content:'';position:absolute;right:-14px;top:50%;transform:translateY(-50%);width:14px;height:2.5px;background:var(--mint-deep)}
+  .tab:hover{transform:translateX(-3px);background:var(--mint-pale)}
+  .tab.active{background:var(--mint-pale);box-shadow:inset 0 0 0 1px var(--mint-deep)}
+  @media(max-width:768px){.page{grid-template-columns:1fr;padding:0 10px}.rail{position:static;padding-top:8px}.rail-inner{padding:0;display:flex;overflow-x:auto;gap:8px;padding-bottom:6px}.rail-inner::before{display:none}.tab{margin:0;width:auto;flex:none;padding:8px 14px;font-size:14px}.tab::after{display:none}}
+</style>
+</head>
+<body>
+<div class="page">
+<div class="main">
+
+
+
+<div class="page-wrap">
+  <div class="page-header">
+    <p class="page-eyebrow">Wardrobe</p>
+    <h1 class="page-title">방셀 의상 목록 💚</h1>
+    <p class="page-sub">우히의 헤어, 렌즈, 의상 타입을 확인해요<br>이미지 클릭하면 크게 볼 수 있어요</p>
+  </div>
+
+  <div class="cat-tabs">
+    <button class="cat-tab active" onclick="filterCat('hair',this)">헤어</button>
+    <button class="cat-tab" onclick="filterCat('lens',this)">렌즈</button>
+    <button class="cat-tab" onclick="filterCat('outfit',this)">의상</button>
+  </div>
+
+  <div id="loading"><div class="spinner"></div></div>
+
+  <div id="sec-hair" class="section"></div>
+  <div id="sec-lens" class="section"></div>
+  <div id="sec-outfit" class="section"></div>
+</div>
+
+</div>
+<nav class="rail" aria-label="페이지 내비게이션"><div class="rail-inner"><a class="tab" href="../index.html">프로필</a><a class="tab" href="../schedule.html">일정</a><a class="tab" href="../songbook/index.html">노래</a><a class="tab active" href="../dress/index.html">옷장</a><a class="tab" href="../upbo/index.html">업보</a></div></nav>
+<footer>
+  <p>© 2026 우히·· · <span>애플이들</span>과 함께 만들어가는 방송</p>
+  <p style="margin-top:6px;font-size:11px;color:var(--gray-400)">Designed & Developed by <strong style="color:var(--gray-600)">아키텍트 크리에이티브</strong> · <a href="mailto:profile@soop.info" style="color:var(--gray-400);text-decoration:none;transition:color .2s" onmouseover="this.style.color='var(--mint-dark)'" onmouseout="this.style.color='var(--gray-400)'">profile@soop.info</a></p>
+</footer>
+
+<div class="lightbox" id="lightbox" onclick="if(event.target===this)closeLb()">
+  <span class="lightbox-close" onclick="closeLb()">×</span>
+  <img id="lb-img" src="" alt="">
+  <span class="lightbox-caption" id="lb-cap"></span>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const sb = supabase.createClient(
+  'https://xnknkqvmqntxdwcsqmbj.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhua25rcXZtcW50eGR3Y3NxbWJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNDkwOTYsImV4cCI6MjA5NjgyNTA5Nn0.p_zgPHCauTsSZW24l1XlZxeHrCZzmir0ALSqsrQ-wSc'
+);
+
+const ICONS = { hair:'', lens:'', outfit:'' };
+const LABELS = { hair:'헤어', lens:'렌즈', outfit:'의상 ON / OFF' };
+let allItems = [];
+
+async function load() {
+  const { data } = await sb.from('dress_items').select('*').order('sort_order').order('created_at');
+  allItems = data || [];
+  document.getElementById('loading').style.display = 'none';
+  renderAll('hair');
+}
+
+function renderSection(cat, items) {
+  const el = document.getElementById('sec-' + cat);
+  const catItems = items.filter(i => i.category === cat);
+  if (!catItems.length) { el.innerHTML = ''; return; }
+
+  el.innerHTML = `
+    <div class="section-head">
+      <h2 class="section-title">${LABELS[cat]}</h2>
+      <span class="section-count">${catItems.length} 타입</span>
+    </div>
+    <div class="item-grid${cat==='outfit'?' outfit-grid':''}">
+      ${catItems.map((item, idx) => {
+        const badges = (item.badges||[]).map(b =>
+          `<span class="badge">${b.label}</span>`
+        ).join('');
+        const imgHtml = item.image_url
+          ? `<img src="${item.image_url}" alt="${item.name}" loading="lazy">`
+          : `<span>${ICONS[cat]}</span>`;
+        const evCls = item.is_event ? ' is-event' : '';
+      let glowStyle = '';
+      if (item.is_event && item.glow_color) {
+        const c = item.glow_color;
+        const r = parseInt(c.slice(1,3),16), g = parseInt(c.slice(3,5),16), b = parseInt(c.slice(5,7),16);
+        glowStyle = `--glow-off:0 0 0 0 rgba(${r},${g},${b},0);--glow-on:0 0 14px 4px rgba(${r},${g},${b},.45);border-color:${c};`;
+      }
+      return `<div class="item-card${evCls}" style="${glowStyle}animation-delay:${idx*0.06}s" onclick="lb('${item.image_url||''}','${item.name||''}')">
+          <div class="item-img">
+            ${badges ? `<div class="badge-wrap">${badges}</div>` : ''}
+            ${imgHtml}
+          </div>
+          <div class="item-info">
+            <p class="item-name">${item.name}</p>
+            ${item.description ? `<p class="item-desc">${item.description}</p>` : ''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function renderAll(filter) {
+  filter = filter || 'hair';
+  ['hair','lens','outfit'].forEach(cat => {
+    const sec = document.getElementById('sec-'+cat);
+    if (filter !== cat) { sec.classList.add('hidden'); return; }
+    sec.classList.remove('hidden');
+    renderSection(cat, allItems);
+  });
+}
+
+function filterCat(cat, el) {
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderAll(cat);
+}
+
+// 기본 헤어로 시작
+
+
+function lb(src, cap) {
+  if (!src) return;
+  document.getElementById('lb-img').src = src;
+  document.getElementById('lb-cap').textContent = cap;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLb() { document.getElementById('lightbox').classList.remove('open'); }
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeLb(); });
+
+load();
+</script>
+</div><!--/page-->
+</body>
+</html>

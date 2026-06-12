@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>우히</title>
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --mint:#8FBCF2; --mint-light:#DCEBFF; --mint-pale:#EFF5FF;
+    --mint-dark:#1599f0; --mint-deep:#0455DC;
+    --lavender:#C5B8F0; --lavender-light:#EBE6FF;
+    --pink-soft:#FFD6EC;
+    --white:#FFFFFF; --gray-100:#F7F7F7; --gray-200:#EEEEEE;
+    --gray-400:#BBBBBB; --gray-600:#888888;
+    --text:#1C1C2E; --text-muted:#6B7280;
+    --red:#EF4444; --red-pale:#FEF2F2;
+  }
+  html { scroll-behavior:smooth; }
+  body { font-family:'Pretendard',sans-serif; background:var(--gray-100); color:var(--text); min-height:100vh; }
+  body.embed-mode .nav { display:none; }
+  body.embed-mode { background:transparent; }
+  body.embed-mode .page-wrap { padding-top:12px; }
+
+  /* NAV */
+  .nav { position:sticky; top:0; z-index:50; background:rgba(255,255,255,.92); backdrop-filter:blur(12px); border-bottom:1px solid var(--gray-200); height:56px; }
+  .nav-inner { max-width:720px; margin:0 auto; padding:0 24px; height:100%; display:flex; align-items:center; gap:16px; }
+  .nav-back { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text-muted); text-decoration:none; transition:color .2s; }
+  .nav-back::before { content:'←'; }
+  .nav-back:hover { color:var(--mint-deep); }
+  .nav-dot { width:5px; height:5px; border-radius:50%; background:var(--mint); }
+  .nav-title { font-family:'Pretendard',serif; font-size:16px; }
+  /* nav 우측 링크 */
+  .nav-links { display:flex; align-items:center; gap:4px; margin-left:auto; }
+  .nav-link { padding:5px 13px; border-radius:20px; font-size:12px; font-weight:600; text-decoration:none; transition:all .18s; color:var(--text-muted); background:none; border:1.5px solid transparent; }
+  .nav-link:hover { color:var(--mint-deep); background:var(--mint-pale); border-color:var(--mint); }
+  .nav-link.active { color:var(--mint-deep); background:var(--mint-pale); border-color:var(--mint); }
+
+  /* PAGE */
+  .page-wrap { max-width:720px; margin:0 auto; padding:32px 24px 80px; }
+
+  /* 헤더 */
+  .page-header {
+    display:flex; align-items:flex-end; justify-content:space-between;
+    margin-bottom:20px; gap:12px;
+  }
+  .page-eyebrow { font-size:11px; font-weight:500; color:var(--mint-dark); letter-spacing:.2em; text-transform:uppercase; opacity:.75; }
+  .page-title { font-family:'Pretendard',serif; font-size:28px; color:var(--text); }
+  .header-right { display:flex; align-items:center; gap:8px; padding-bottom:4px; flex-shrink:0; }
+  .updated-badge { font-size:12px; color:var(--text-muted); background:var(--white); border:1px solid var(--gray-200); padding:4px 14px; border-radius:100px; white-space:nowrap; }
+
+  /* 검색 */
+  .search-input { width:100%; padding:11px 16px; border-radius:14px; border:1.5px solid var(--gray-200); background:var(--white); font-size:14px; color:var(--text); outline:none; font-family:inherit; margin-bottom:20px; transition:border-color .2s; box-shadow:0 2px 8px rgba(0,0,0,.04); }
+  .search-input:focus { border-color:var(--mint-dark); }
+  .search-input::placeholder { color:var(--gray-400); }
+
+  /* 멤버 그리드 */
+  .member-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  @media(max-width:480px) { .member-grid { grid-template-columns:repeat(2,1fr); gap:10px; } }
+
+  /* 멤버 카드 */
+  .member-card {
+    background:var(--white); border:1.5px solid var(--gray-200);
+    border-radius:18px; padding:16px 14px; text-align:center;
+    cursor:pointer; transition:all .22s;
+    box-shadow:0 2px 8px rgba(0,0,0,.04);
+    opacity:0; transform:translateY(12px);
+  }
+  .member-card.visible { opacity:1; transform:translateY(0); }
+  .member-card:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(143,188,242,.2); border-color:var(--mint); }
+
+  /* 프로필 이미지 */
+  .member-avatar {
+    width:64px; height:64px; border-radius:50%;
+    margin:0 auto 10px;
+    background:linear-gradient(135deg,var(--mint-pale),var(--lavender-light));
+    overflow:hidden; border:2px solid var(--gray-200);
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px;
+  }
+  .member-avatar img { width:100%; height:100%; object-fit:cover; }
+  .member-nick { font-size:13px; font-weight:700; color:var(--text); margin-bottom:4px; line-height:1.3; word-break:break-all; }
+  .member-id { font-size:11px; color:var(--text-muted); margin-bottom:8px; }
+  .member-count { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; background:var(--lavender-light); color:#5B4BA8; border:1px solid var(--lavender); padding:3px 10px; border-radius:20px; }
+
+  /* 빈상태 */
+  .state-box { text-align:center; padding:60px 20px; color:var(--text-muted); font-size:14px; }
+  .spinner { width:28px; height:28px; border-radius:50%; border:3px solid var(--mint-light); border-top-color:var(--mint-dark); animation:spin .8s linear infinite; margin:0 auto 14px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* 팝업 */
+  .modal-backdrop { position:fixed; inset:0; z-index:100; background:rgba(0,0,0,.3); backdrop-filter:blur(6px); display:none; }
+  .modal-backdrop.open { display:flex; }
+  .modal-box {
+    position:fixed;
+    left:50%; transform:translateX(-50%) translateY(0);
+    background:var(--white); border-radius:22px; padding:28px;
+    max-width:400px; width:90%; max-height:80vh; overflow-y:auto;
+    box-shadow:0 20px 60px rgba(0,0,0,.15); border:1.5px solid var(--gray-200);
+    animation:popIn .25s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes popIn { from{transform:translateX(-50%) translateY(10px) scale(.97);opacity:0} to{transform:translateX(-50%) translateY(0) scale(1);opacity:1} }
+  .modal-header { display:flex; align-items:center; gap:14px; margin-bottom:20px; }
+  .modal-avatar { width:52px; height:52px; border-radius:50%; background:linear-gradient(135deg,var(--mint-pale),var(--lavender-light)); overflow:hidden; border:2px solid var(--gray-200); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:20px; }
+  .modal-avatar img { width:100%; height:100%; object-fit:cover; }
+  .modal-nick { font-size:16px; font-weight:700; color:var(--text); }
+  .modal-uid { font-size:12px; color:var(--text-muted); }
+  .task-list { display:flex; flex-direction:column; gap:8px; }
+  .task-row { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--gray-100); border-radius:10px; }
+  .task-name { font-size:13px; font-weight:600; color:var(--text); }
+  .task-qty { font-size:12px; font-weight:700; color:#5B4BA8; background:var(--lavender-light); border:1px solid var(--lavender); padding:2px 10px; border-radius:20px; }
+  .task-memo-txt { font-size:11px; color:var(--text-muted); margin-top:2px; }
+  .modal-close { width:100%; padding:11px; border-radius:12px; background:var(--gray-100); color:var(--text-muted); border:none; font-size:14px; font-weight:600; cursor:pointer; transition:background .2s; font-family:inherit; margin-top:20px; }
+  .modal-close:hover { background:var(--gray-200); }
+
+  /* 문의 모달 */
+  .modal-input { width:100%; padding:10px 14px; border-radius:12px; border:1.5px solid var(--gray-200); font-family:inherit; font-size:13px; color:var(--text); outline:none; margin-bottom:10px; transition:border-color .2s; }
+  .modal-input:focus { border-color:var(--mint-dark); }
+  textarea.modal-input { height:90px; resize:none; }
+  .modal-submit { width:100%; padding:11px; border-radius:12px; background:var(--mint-dark); color:#fff; border:none; font-size:14px; font-weight:700; cursor:pointer; transition:background .2s; font-family:inherit; }
+  .modal-submit:hover { background:var(--mint-deep); }
+  .inquiry-btn { display:flex; align-items:center; gap:8px; padding:8px 18px; background:var(--white); border:1.5px solid var(--gray-200); border-radius:100px; font-size:13px; font-weight:600; color:var(--text-muted); cursor:pointer; font-family:inherit; transition:all .2s; box-shadow:0 2px 8px rgba(0,0,0,.04); }
+  .inquiry-btn:hover { border-color:var(--mint); color:var(--mint-deep); }
+
+  footer { text-align:center; padding:30px 0; font-size:12px; color:var(--gray-400); border-top:1px solid var(--gray-200); margin-top:20px; }
+  footer span { color:var(--mint-dark); }
+  @media(max-width:600px) {
+    .page-header { flex-direction:column; align-items:flex-start; gap:8px; }
+    .header-right { width:100%; justify-content:space-between; }
+    .nav-links { gap:2px; }
+    .nav-link { padding:4px 8px; font-size:11px; }
+  }
+
+  /* ── 우측 세로 탭 내비 (우히) ── */
+  .page{display:grid;grid-template-columns:1fr 150px;gap:24px;max-width:1120px;margin:0 auto;padding:0 16px;align-items:start}
+  .main{min-width:0}
+  footer{grid-column:1/-1}
+  .rail{position:sticky;top:24px;align-self:start;padding-top:24px}
+  .rail-inner{position:relative;padding-right:14px}
+  .rail-inner::before{content:'';position:absolute;top:-8px;bottom:-8px;right:0;width:2.5px;background:var(--mint-deep);border-radius:2px}
+  .tab{display:block;margin:0 0 13px auto;width:100px;text-align:center;padding:10px 0;font-size:16px;font-weight:800;color:var(--mint-deep);text-decoration:none;background:#fff;position:relative;border:2.5px solid var(--mint-deep);border-radius:255px 15px 225px 15px/15px 225px 15px 255px;transition:transform .18s,background .18s}
+  .tab:nth-child(2n){border-radius:15px 225px 15px 255px/225px 15px 255px 15px}
+  .tab:nth-child(3n){border-radius:225px 15px 255px 15px/15px 255px 15px 225px}
+  .tab::after{content:'';position:absolute;right:-14px;top:50%;transform:translateY(-50%);width:14px;height:2.5px;background:var(--mint-deep)}
+  .tab:hover{transform:translateX(-3px);background:var(--mint-pale)}
+  .tab.active{background:var(--mint-pale);box-shadow:inset 0 0 0 1px var(--mint-deep)}
+  @media(max-width:768px){.page{grid-template-columns:1fr;padding:0 10px}.rail{position:static;padding-top:8px}.rail-inner{padding:0;display:flex;overflow-x:auto;gap:8px;padding-bottom:6px}.rail-inner::before{display:none}.tab{margin:0;width:auto;flex:none;padding:8px 14px;font-size:14px}.tab::after{display:none}}
+</style>
+</head>
+<body>
+<div class="page">
+<div class="main">
+
+
+
+<div class="page-wrap">
+  <div class="page-header">
+    <div>
+      <p class="page-eyebrow">UPBO</p>
+      <h1 class="page-title">업보 현황</h1>
+    </div>
+    <div class="header-right">
+      <span class="updated-badge" id="updatedLabel">갱신일: —</span>
+      <button class="inquiry-btn" onclick="openInquiry()">업보 문의하기</button>
+    </div>
+  </div>
+
+  <input class="search-input" id="searchInput" type="text" placeholder="🔍 닉네임 또는 아이디 검색...">
+
+  <div id="loadingState" class="state-box"><div class="spinner"></div>불러오는 중...</div>
+  <div id="emptyState" class="state-box" style="display:none">업보가 없어요 ✨</div>
+  <div class="member-grid" id="memberGrid"></div>
+</div>
+
+<!-- 업보 팝업 -->
+<div class="modal-backdrop" id="upboModal" onclick="closeUpboModal(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-avatar" id="modal-avatar"><span>🎵</span></div>
+      <div>
+        <div class="modal-nick" id="modal-nick"></div>
+        <div class="modal-uid" id="modal-uid"></div>
+      </div>
+    </div>
+    <div class="task-list" id="modal-task-list"></div>
+    <button class="modal-close" onclick="document.getElementById('upboModal').classList.remove('open'); document.querySelector('#upboModal .modal-box').style.top = ''">닫기</button>
+  </div>
+</div>
+
+<!-- 문의 모달 -->
+<div class="modal-backdrop" id="inquiryModal" onclick="closeInquiry(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div style="font-size:16px;font-weight:700;margin-bottom:16px">업보 문의</div>
+    <div id="inquiryForm">
+      <input class="modal-input" id="iNick" type="text" placeholder="닉네임">
+      <textarea class="modal-input" id="iContent" placeholder="문의 내용을 입력해주세요"></textarea>
+      <button class="modal-submit" onclick="submitInquiry()">문의 접수</button>
+    </div>
+    <div id="inquirySuccess" style="display:none;text-align:center;padding:20px">
+      <div style="font-size:2.5rem;margin-bottom:10px">✅</div>
+      <div style="font-weight:700;color:var(--text)">문의가 접수됐어요!</div>
+    </div>
+  </div>
+</div>
+
+</div>
+<nav class="rail" aria-label="페이지 내비게이션"><div class="rail-inner"><a class="tab" href="../index.html">프로필</a><a class="tab" href="../schedule.html">일정</a><a class="tab" href="../songbook/index.html">노래</a><a class="tab" href="../dress/index.html">옷장</a><a class="tab active" href="../upbo/index.html">업보</a></div></nav>
+<footer>
+  <p>© 2026 우히·· · <span>애플이들</span>과 함께 만들어가는 방송</p>
+  <p style="margin-top:6px;font-size:11px;color:var(--gray-400)">Designed & Developed by <strong style="color:var(--gray-600)">아키텍트 크리에이티브</strong> · <a href="mailto:profile@soop.info" style="color:var(--gray-400);text-decoration:none;transition:color .2s" onmouseover="this.style.color='var(--mint-dark)'" onmouseout="this.style.color='var(--gray-400)'">profile@soop.info</a></p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const sb = supabase.createClient(
+  'https://xnknkqvmqntxdwcsqmbj.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhua25rcXZtcW50eGR3Y3NxbWJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNDkwOTYsImV4cCI6MjA5NjgyNTA5Nn0.p_zgPHCauTsSZW24l1XlZxeHrCZzmir0ALSqsrQ-wSc'
+);
+
+let allMembers = [], memberTasks = {};
+
+function esc(t) { const d=document.createElement('div'); d.textContent=t||''; return d.innerHTML; }
+
+function avatarUrl(uid) {
+  if (!uid) return null;
+  const pre = uid.substring(0,2);
+  return `https://profile.img.sooplive.com/LOGO/${pre}/${uid}/${uid}.jpg`;
+}
+
+async function load() {
+  try {
+    const [{ data: settings }, { data: members }, { data: tasks }] = await Promise.all([
+      sb.from('upbo_settings').select('*').eq('key','last_updated').single(),
+      sb.from('upbo_members').select('*').order('sort_order').order('nickname'),
+      sb.from('upbo_tasks').select('*, upbo_task_types(id,name,category,sort_order)').gt('quantity', 0)
+    ]);
+
+    if (settings?.value) document.getElementById('updatedLabel').textContent = '갱신일: ' + settings.value;
+
+    memberTasks = {};
+    (tasks||[]).forEach(t => {
+      if (!memberTasks[t.member_id]) memberTasks[t.member_id] = [];
+      memberTasks[t.member_id].push(t);
+    });
+
+    allMembers = (members||[])
+      .filter(m => (memberTasks[m.id]?.length) && !m.is_hidden);
+
+    document.getElementById('loadingState').style.display = 'none';
+    if (!allMembers.length) { document.getElementById('emptyState').style.display='block'; return; }
+    render(allMembers);
+  } catch(e) {
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('emptyState').style.display = 'block';
+  }
+}
+
+function render(members) {
+  const grid = document.getElementById('memberGrid');
+  const empty = document.getElementById('emptyState');
+  if (!members.length) { empty.style.display='block'; grid.innerHTML=''; return; }
+  empty.style.display = 'none';
+
+  grid.innerHTML = members.map((m, idx) => {
+    const tasks = memberTasks[m.id] || [];
+    const totalQty = tasks.reduce((s,t) => s + (t.quantity||1), 0);
+    const url = avatarUrl(m.user_id);
+    const imgHtml = url
+      ? `<img src="${url}" alt="${esc(m.nickname)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+      : '';
+    const fallback = `<span style="${url?'display:none':''}">🎵</span>`;
+
+    return `<div class="member-card" style="animation-delay:${idx*0.04}s" onclick="openUpboModal('${m.id}', event)">
+      <div class="member-avatar">${imgHtml}${fallback}</div>
+      <div class="member-nick">${esc(m.nickname)}</div>
+      ${m.user_id ? `<div class="member-id">(${esc(m.user_id)})</div>` : ''}
+      <span class="member-count">업보 ${totalQty}</span>
+    </div>`;
+  }).join('');
+
+  // 카드 fadeIn
+  const obs = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); }), {threshold:.05});
+  grid.querySelectorAll('.member-card').forEach(el => obs.observe(el));
+}
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  const q = e.target.value.toLowerCase().trim();
+  render(q ? allMembers.filter(m =>
+    m.nickname.toLowerCase().includes(q) || (m.user_id||'').toLowerCase().includes(q)
+  ) : allMembers);
+});
+
+// 업보 팝업
+function openUpboModal(memberId, clickEvent) {
+  // 클릭한 카드의 뷰포트 내 중앙 y 계산
+  const card = clickEvent?.currentTarget;
+  const modal = document.querySelector('#upboModal .modal-box');
+  if (card && modal) {
+    const rect = card.getBoundingClientRect();
+    const centerY = rect.top + rect.height / 2;
+    const vh = window.innerHeight;
+    const mh = Math.min(modal.offsetHeight || 400, vh * 0.8);
+    let top = centerY - mh / 2;
+    top = Math.max(16, Math.min(top, vh - mh - 16));
+    modal.style.top = top + 'px';
+  }
+  const m = allMembers.find(x => x.id === memberId);
+  if (!m) return;
+  const tasks = (memberTasks[memberId] || []).slice().sort((a, b) => {
+    const na = a.upbo_task_types?.name || '';
+    const nb = b.upbo_task_types?.name || '';
+    const isKo = s => /^[가-힣]/.test(s);
+    const isEn = s => /^[A-Za-z]/.test(s);
+    const rank = s => isKo(s) ? 0 : isEn(s) ? 1 : 2;
+    if (rank(na) !== rank(nb)) return rank(na) - rank(nb);
+    return na.localeCompare(nb, 'ko');
+  });
+
+  // 아바타
+  const avatarEl = document.getElementById('modal-avatar');
+  const url = avatarUrl(m.user_id);
+  avatarEl.innerHTML = url
+    ? `<img src="${url}" alt="" onerror="this.parentElement.innerHTML='<span>🎵</span>'" style="width:100%;height:100%;object-fit:cover">`
+    : '<span>🎵</span>';
+
+  document.getElementById('modal-nick').textContent = m.nickname;
+  document.getElementById('modal-uid').textContent = m.user_id ? `(${m.user_id})` : '';
+
+  const listEl = document.getElementById('modal-task-list');
+  listEl.innerHTML = tasks.map(t => `
+    <div class="task-row">
+      <div>
+        <div class="task-name">${esc(t.upbo_task_types?.name||'')}</div>
+        ${t.memo ? `<div class="task-memo-txt">${esc(t.memo)}</div>` : ''}
+      </div>
+      <span class="task-qty">×${t.quantity||1}</span>
+    </div>`).join('');
+
+  document.getElementById('upboModal').classList.add('open');
+}
+
+function closeUpboModal(e) { if(e.target===e.currentTarget) document.getElementById('upboModal').classList.remove('open'); document.querySelector('#upboModal .modal-box').style.top = ''; }
+document.addEventListener('keydown', e => { if(e.key==='Escape') { document.getElementById('upboModal').classList.remove('open'); document.getElementById('inquiryModal').classList.remove('open'); }});
+
+// 문의
+function openInquiry() {
+  document.getElementById('inquiryForm').style.display='block';
+  document.getElementById('inquirySuccess').style.display='none';
+  document.getElementById('iNick').value='';
+  document.getElementById('iContent').value='';
+  document.getElementById('inquiryModal').classList.add('open');
+}
+function closeInquiry(e) { if(e.target===e.currentTarget) document.getElementById('inquiryModal').classList.remove('open'); }
+async function submitInquiry() {
+  const nick = document.getElementById('iNick').value.trim();
+  const content = document.getElementById('iContent').value.trim();
+  if (!nick||!content) return;
+  const { error } = await sb.from('upbo_inquiries').insert({ nickname:nick, content });
+  if (error) { alert('접수 실패: '+error.message); return; }
+  document.getElementById('inquiryForm').style.display='none';
+  document.getElementById('inquirySuccess').style.display='block';
+  setTimeout(() => document.getElementById('inquiryModal').classList.remove('open'), 2000);
+}
+
+// embed 모드
+(function() {
+  const params = new URLSearchParams(location.search);
+  if (params.has('embed')) {
+    document.body.classList.add('embed-mode');
+    function sendHeight() {
+      window.parent.postMessage({ type:'upbo-height', height: document.body.scrollHeight }, '*');
+    }
+    new ResizeObserver(sendHeight).observe(document.body);
+    setTimeout(sendHeight, 600);
+  }
+})();
+
+load();
+</script>
+</div><!--/page-->
+</body>
+</html>
