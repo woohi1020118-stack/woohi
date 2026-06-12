@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>우히</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --mint: #8FBCF2; --mint-light: #DCEBFF; --mint-pale: #EFF5FF;
+    --mint-dark: #1599f0; --mint-deep: #0455DC;
+    --lavender: #C5B8F0; --lavender-light: #EBE6FF;
+    --pink-soft: #FFD6EC;
+    --white: #FFFFFF; --gray-100: #F7F7F7; --gray-200: #EEEEEE;
+    --gray-400: #BBBBBB; --gray-600: #888888;
+    --text: #1C1C2E; --text-muted: #6B7280;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Pretendard', sans-serif; background: var(--white); color: var(--text); overflow-x: hidden; min-height: 100vh; }
+
+  /* NAV */
+  .nav { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--gray-200); height: 56px; }
+  .nav-inner { max-width: 900px; margin: 0 auto; padding: 0 40px; height: 100%; display: flex; align-items: center; gap: 20px; }
+  .nav-back { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text-muted); text-decoration:none; transition:color .2s; }
+  .nav-back:hover { color: var(--mint-deep); }
+  .nav-back::before { content:'←'; font-size:14px; }
+  .nav-title { font-family:'Pretendard',serif; font-size:16px; color:var(--text); }
+  .nav-dot { width:5px; height:5px; border-radius:50%; background:var(--mint); }
+  /* 우측 nav 링크 */
+  .nav-links { display:flex; align-items:center; gap:4px; margin-left:auto; }
+  .nav-link {
+    padding:5px 13px; border-radius:20px; font-size:12px; font-weight:600;
+    text-decoration:none; transition:all .18s;
+    color:var(--text-muted); background:none; border:1.5px solid transparent;
+  }
+  .nav-link:hover { color:var(--mint-deep); background:var(--mint-pale); border-color:var(--mint); }
+  .nav-link.active { color:var(--mint-deep); background:var(--mint-pale); border-color:var(--mint); }
+  @media(max-width:768px) {
+    .nav-links { gap:2px; }
+    .nav-link { padding:4px 8px; font-size:11px; }
+  }
+
+  /* HEADER */
+  .page-header { padding: 48px 60px 32px; max-width: 900px; margin: 0 auto; display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; }
+  .page-eyebrow { font-size:11px; font-weight:500; color:var(--mint-dark); letter-spacing:.25em; text-transform:uppercase; margin-bottom:8px; opacity:.75; }
+  .page-title { font-family:'Pretendard',serif; font-size:36px; font-weight:400; color:var(--text); }
+  .page-sub { font-size:13px; color:var(--text-muted); margin-top:6px; line-height:1.6; }
+  .month-nav { display:flex; align-items:center; gap:14px; flex-shrink:0; }
+  .month-btn { width:36px; height:36px; border-radius:50%; border:1.5px solid var(--mint); background:var(--mint-pale); color:var(--mint-deep); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s ease; }
+  .month-btn:hover { background:var(--mint-light); transform:scale(1.05); }
+  .month-label { font-family:'Pretendard',serif; font-size:20px; color:var(--text); min-width:100px; text-align:center; }
+
+  /* CALENDAR */
+  .calendar-wrap { max-width: 900px; margin: 0 auto; padding: 0 60px 40px; }
+  .cal-weekdays { display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; margin-bottom:8px; }
+  .cal-weekday { text-align:center; font-size:11px; font-weight:500; color:var(--gray-600); letter-spacing:.08em; padding:8px 0; }
+  .cal-weekday.sun { color: #E88888; }
+  .cal-weekday.sat { color: #88A8E8; }
+  .cal-grid { display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; }
+
+  .cal-cell { height:120px; border-radius:12px; padding:10px 10px 8px; border:1px solid var(--gray-200); background:var(--white); transition:border-color .15s, box-shadow .15s, transform .15s; position:relative; overflow:hidden; }
+  .cal-cell.other-month { background:var(--gray-100); opacity:.45; }
+  .cal-cell.today { border-color:var(--mint); background:var(--mint-pale); }
+  .cal-cell.has-stream { cursor:pointer; }
+  .cal-cell.has-stream:hover { border-color:var(--mint-dark); box-shadow:0 4px 16px rgba(21,153,240,.2); transform:translateY(-1px); }
+  .cal-cell.live { border-color:#F472B6; background:#FFF0F7; animation:pulse-border 2s ease-in-out infinite; }
+  .cal-cell.holiday { background:#FFF8F0; border-color:#FFD6A0; }
+  .cal-cell.special {
+    border-color:#7DD3FC;
+    animation: special-glow 2.5s ease-in-out infinite;
+  }
+  @keyframes special-glow {
+    0%,100% { box-shadow: 0 0 0 0 rgba(125,211,252,0); }
+    50% { box-shadow: 0 0 14px 4px rgba(125,211,252,.45); }
+  }
+  .cal-cell.anniversary {
+    animation: anniv-glow 2s ease-in-out infinite;
+    border-color: #F9A8D4 !important;
+  }
+  @keyframes anniv-glow {
+    0%,100% { box-shadow: 0 0 0 0 rgba(249,168,212,0); }
+    50% { box-shadow: 0 0 14px 4px rgba(249,168,212,.5); }
+  }
+  .stream-chip-anniv { background:#FEF9C3; color:#92400E; font-weight:700; }
+  .cal-cell.holiday .cal-day-num { color: #B07A00 !important; }
+
+  @keyframes pulse-border { 0%,100%{box-shadow:0 0 0 0 rgba(244,114,182,0)} 50%{box-shadow:0 0 0 4px rgba(244,114,182,.15)} }
+
+  .cal-day-num { font-size:13px; font-weight:500; color:var(--text); display:block; margin-bottom:6px; }
+  .cal-cell.other-month .cal-day-num { color:var(--gray-400); }
+  .cal-cell.today .cal-day-num { color:var(--mint-deep); font-weight:700; }
+  .day-num-sun { color:#E88888 !important; }
+  .day-num-sat { color:#88A8E8 !important; }
+
+  .stream-chip { display:block; font-size:10px; padding:3px 7px; border-radius:6px; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.4; }
+  .stream-chip-1 { background:var(--mint-light); color:var(--mint-deep); }
+  .stream-chip-2 { background:var(--lavender-light); color:#5B4BA8; }
+  .stream-chip-live { background:#FFD6EC; color:#C05688; }
+  .stream-chip-holiday { background:#D0D0D0; color:#555555; font-weight:700; }
+
+  .live-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:#F472B6; margin-right:4px; animation:blink 1.2s ease-in-out infinite; vertical-align:middle; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* 팝업 모달 */
+  .modal-overlay {
+    position:fixed; inset:0;
+    background:rgba(0,0,0,.35); backdrop-filter:blur(4px);
+    z-index:200;
+    opacity:0; pointer-events:none;
+    transition:opacity .2s;
+  }
+  .modal-overlay.open { opacity:1; pointer-events:all; }
+  .modal {
+    position:fixed;
+    top:300px; left:50%;
+    transform:translateX(-50%) scale(.95);
+    width:320px; max-width:90vw;
+    background:var(--white); border-radius:20px;
+    padding:28px 28px 24px;
+    box-shadow:0 20px 60px rgba(0,0,0,.2);
+    opacity:0;
+    transition:transform .25s cubic-bezier(.34,1.56,.64,1), opacity .2s;
+  }
+  .modal-overlay.open .modal {
+    transform:translateX(-50%) scale(1);
+    opacity:1;
+  }
+
+  .modal-date { font-size:12px; color:var(--text-muted); margin-bottom:4px; }
+  .modal-title { font-family:'Pretendard',serif; font-size:22px; color:var(--text); margin-bottom:16px; }
+  .modal-slots { display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
+  .modal-slot { display:flex; align-items:flex-start; gap:10px; }
+  .modal-slot-badge { font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:1px; }
+  .badge-slot-1 { background:var(--mint-light); color:var(--mint-deep); }
+  .badge-slot-2 { background:var(--lavender-light); color:#5B4BA8; }
+  .badge-holiday { background:#FFE8B0; color:#7A5500; }
+  .modal-slot-text { font-size:13px; color:var(--text); line-height:1.5; }
+  .modal-slot-time { font-size:11px; color:var(--text-muted); margin-top:1px; }
+  .modal-close { width:100%; padding:9px; background:var(--gray-100); border:none; border-radius:10px; font-size:13px; color:var(--text-muted); cursor:pointer; font-family:inherit; transition:background .15s; }
+  .modal-close:hover { background:var(--gray-200); }
+
+  /* SCHEDULE INFO */
+  .schedule-info { max-width:900px; margin:0 auto; padding:0 60px 60px; display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .sched-card { background:var(--gray-100); border-radius:16px; padding:22px 24px; border:1px solid var(--gray-200); }
+  .sched-card-title { font-size:12px; font-weight:700; color:var(--mint-deep); letter-spacing:.12em; text-transform:uppercase; margin-bottom:14px; }
+  .sched-days-row { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px; }
+  .sched-day { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; }
+  .sched-day-on { background:var(--mint); color:var(--mint-deep); }
+  .sched-day-off { background:var(--gray-200); color:var(--gray-400); font-weight:400; }
+  .sched-times { display:flex; flex-direction:column; gap:8px; }
+  .sched-time-row { display:flex; align-items:center; gap:10px; }
+  .sched-time-label { font-size:11px; background:var(--mint-light); color:var(--mint-deep); padding:3px 10px; border-radius:20px; font-weight:600; width:28px; text-align:center; }
+  .sched-time-value { font-family:'Pretendard',serif; font-size:16px; color:var(--text); }
+  .legend-list { display:flex; flex-direction:column; gap:10px; }
+  .legend-item { display:flex; align-items:center; gap:10px; font-size:13px; color:var(--text-muted); }
+  .legend-dot { width:12px; height:12px; border-radius:3px; flex-shrink:0; }
+
+  /* UPCOMING */
+  .upcoming-wrap { max-width:900px; margin:0 auto; padding:0 60px 80px; }
+  .section-head { margin-bottom:20px; }
+  .section-label-sm { font-size:11px; font-weight:500; color:var(--mint-dark); letter-spacing:.2em; text-transform:uppercase; margin-bottom:6px; opacity:.75; }
+  .section-h2 { font-family:'Pretendard',serif; font-size:24px; font-weight:400; color:var(--text); }
+  .upcoming-list { display:flex; flex-direction:column; gap:10px; }
+  .upcoming-item { display:flex; align-items:center; gap:16px; background:var(--white); border:1px solid var(--gray-200); border-radius:14px; padding:14px 20px; transition:all .2s ease; }
+  .upcoming-item:hover { border-color:var(--mint); box-shadow:0 4px 14px rgba(21,153,240,.12); transform:translateX(3px); }
+  .upcoming-item.upcoming-holiday { background:#FFFBF0; border-color:#FFD6A0; }
+  .upcoming-date-box { display:flex; flex-direction:column; align-items:center; justify-content:center; width:48px; height:48px; border-radius:12px; background:var(--mint-pale); border:1.5px solid var(--mint); flex-shrink:0; }
+  .upcoming-item.upcoming-holiday .upcoming-date-box { background:#FFF3D0; border-color:#FFD6A0; }
+  .d-month { font-size:10px; color:var(--mint-dark); font-weight:600; letter-spacing:.04em; }
+  .d-day { font-family:'Pretendard',serif; font-size:20px; color:var(--mint-deep); line-height:1; }
+  .upcoming-info { flex:1; }
+  .upcoming-day-label { font-size:11px; color:var(--text-muted); margin-bottom:2px; }
+  .upcoming-title { font-size:14px; font-weight:500; color:var(--text); margin-bottom:3px; }
+  .upcoming-time { font-size:12px; color:var(--mint-dark); }
+  .upcoming-badge { font-size:11px; padding:4px 10px; border-radius:20px; font-weight:600; flex-shrink:0; }
+  .badge-1 { background:var(--mint-pale); color:var(--mint-deep); border:1px solid var(--mint); }
+  .badge-2 { background:var(--lavender-light); color:#5B4BA8; border:1px solid var(--lavender); }
+  .badge-live { background:#FFD6EC; color:#C05688; border:1px solid var(--pink-soft); }
+  .badge-holi { background:#FFE8B0; color:#7A5500; border:1px solid #FFD6A0; }
+
+  .upcoming-item.upcoming-special {
+    animation: upcoming-special-glow 2.5s ease-in-out infinite;
+    border-color: #7DD3FC;
+  }
+  @keyframes upcoming-special-glow {
+    0%,100% { box-shadow: 0 0 0 0 rgba(125,211,252,0); }
+    50% { box-shadow: 0 0 12px 4px rgba(125,211,252,.35); }
+  }
+  .upcoming-item.upcoming-anniv {
+    animation: upcoming-anniv-glow 2s ease-in-out infinite;
+    border-color: #F9A8D4;
+  }
+  @keyframes upcoming-anniv-glow {
+    0%,100% { box-shadow: 0 0 0 0 rgba(249,168,212,0); }
+    50% { box-shadow: 0 0 12px 4px rgba(249,168,212,.4); }
+  }
+  footer { text-align:center; padding:30px; font-size:12px; color:var(--gray-400); border-top:1px solid var(--gray-200); }
+  footer span { color:var(--mint-dark); }
+
+  .fade-up { opacity:0; transform:translateY(20px); transition:opacity .5s ease, transform .5s ease; }
+  .fade-up.visible { opacity:1; transform:translateY(0); }
+
+  @media (max-width:768px) {
+    .page-header { padding:32px 16px 20px; flex-direction:column; align-items:flex-start; }
+    .calendar-wrap { padding:0 8px 32px; }
+    .cal-grid { gap:2px; }
+    .cal-weekdays { gap:2px; }
+    .cal-weekday { font-size:10px; padding:6px 0; }
+    .cal-cell { height:72px; padding:5px 4px; border-radius:8px; overflow:hidden; }
+    .cal-day-num { font-size:11px; margin-bottom:3px; }
+    .stream-chip { font-size:8.5px; padding:2px 4px; border-radius:4px; margin-bottom:2px; }
+    .live-dot { width:5px; height:5px; }
+    .schedule-info { grid-template-columns:1fr; padding:0 16px 32px; }
+    .upcoming-wrap { padding:0 16px 60px; }
+    .nav-inner { padding:0 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+<div class="main">
+
+
+
+<div class="page-header fade-up visible">
+  <div class="page-header-left">
+    <p class="page-eyebrow">Schedule</p>
+    <h1 class="page-title">방송 일정</h1>
+    <p class="page-sub">수~월 방송 · 1부 11:30 / 2부 19:00<br>시간은 변동될 수 있어요. 방송 공지를 확인해 주세요 :)</p>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <div class="month-nav">
+      <button class="month-btn" id="prev-month" aria-label="이전 달">‹</button>
+      <span class="month-label" id="month-label"></span>
+      <button class="month-btn" id="next-month" aria-label="다음 달">›</button>
+    </div>
+    <a href="https://www.sooplive.com/station/ad8hv5jk7d6" target="_blank"
+       id="live-indicator"
+       style="display:none;align-items:center;gap:6px;
+              background:#FFF0F7;border:1.5px solid #F4B8D8;color:#C05688;
+              font-size:12px;font-weight:600;padding:5px 14px;border-radius:20px;
+              text-decoration:none;max-width:360px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">
+      <span class="live-dot"></span>
+      <span class="live-title">LIVE</span>
+    </a>
+  </div>
+</div>
+
+<div class="calendar-wrap fade-up">
+  <div class="cal-weekdays">
+    <div class="cal-weekday sun">일</div>
+    <div class="cal-weekday">월</div>
+    <div class="cal-weekday">화</div>
+    <div class="cal-weekday">수</div>
+    <div class="cal-weekday">목</div>
+    <div class="cal-weekday">금</div>
+    <div class="cal-weekday sat">토</div>
+  </div>
+  <div class="cal-grid" id="cal-grid"></div>
+</div>
+
+<div class="schedule-info fade-up">
+  <div class="sched-card">
+    <p class="sched-card-title">정기 방송 스케줄</p>
+    <div class="sched-days-row">
+      <div class="sched-day sched-day-on">일</div>
+      <div class="sched-day sched-day-on">월</div>
+      <div class="sched-day sched-day-off">화</div>
+      <div class="sched-day sched-day-on">수</div>
+      <div class="sched-day sched-day-on">목</div>
+      <div class="sched-day sched-day-on">금</div>
+      <div class="sched-day sched-day-on">토</div>
+    </div>
+    <div class="sched-times">
+      <div class="sched-time-row">
+        <span class="sched-time-label">1부</span>
+        <span class="sched-time-value">11:30 — 14:30</span>
+      </div>
+      <div class="sched-time-row">
+        <span class="sched-time-label" style="background:var(--lavender-light);color:#5B4BA8">2부</span>
+        <span class="sched-time-value">19:00 — 텐션 떨어질 때까지</span>
+      </div>
+    </div>
+  </div>
+  <div class="sched-card">
+    <p class="sched-card-title">캘린더 범례</p>
+    <div class="legend-list">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--mint-light);border:1.5px solid var(--mint)"></div>1부 방송 예정 (11:30)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--lavender-light);border:1.5px solid var(--lavender)"></div>2부 방송 예정 (19:00)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#FFD6EC;border:1.5px solid #F4B8D8"></div>LIVE 방송 중</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#FFE8B0;border:1.5px solid #FFD6A0"></div>휴방</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--mint-pale);border:1.5px solid var(--mint)"></div>오늘</div>
+    </div>
+  </div>
+</div>
+
+<div class="upcoming-wrap fade-up">
+  <div class="section-head">
+    <p class="section-label-sm">Upcoming</p>
+    <h2 class="section-h2">이번 주 방송</h2>
+  </div>
+  <div class="upcoming-list" id="upcoming-list"></div>
+</div>
+
+</div>
+<nav class="rail" aria-label="페이지 내비게이션"><div class="rail-inner"><a class="tab" href="index.html">프로필</a><a class="tab active" href="schedule.html">일정</a><a class="tab" href="songbook/index.html">노래</a><a class="tab" href="dress/index.html">옷장</a><a class="tab" href="upbo/index.html">업보</a></div></nav>
+<footer>
+  <p>© 2026 우히 · SOOP</p>
+  <p style="margin-top:6px;font-size:11px;color:var(--gray-400)">Designed & Developed by <strong style="color:var(--gray-600)">아키텍트 크리에이티브</strong> · <a href="mailto:profile@soop.info" style="color:var(--gray-400);text-decoration:none;transition:color .2s" onmouseover="this.style.color='var(--mint-dark)'" onmouseout="this.style.color='var(--gray-400)'">profile@soop.info</a></p>
+</footer>
+
+<!-- 팝업 모달 -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <p class="modal-date" id="modal-date"></p>
+    <p class="modal-title" id="modal-title"></p>
+    <div class="modal-slots" id="modal-slots"></div>
+    <button class="modal-close" onclick="closeModal()">닫기</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// SOOP 라이브 상태 폴링
+const WORKER_URL = ''; // 우히 라이브 워커 미설정 — URL 채우면 활성화
+let isLiveNow = false;
+let liveData = null;
+
+async function checkLive() {
+  if (!WORKER_URL) return;
+  try {
+    const res = await fetch(WORKER_URL);
+    const data = await res.json();
+    isLiveNow = data.is_live;
+    liveData = data;
+    // LIVE 상태 변경 시 캘린더 재렌더
+    renderCalendar();
+    // 라이브 중이면 방송 제목 nav에 표시
+    const liveIndicator = document.getElementById('live-indicator');
+    if (isLiveNow) {
+      liveIndicator.style.display = 'flex';
+      const liveText = data.title ? `LIVE · ${data.title}` : 'LIVE 방송 중';
+      liveIndicator.querySelector('.live-title').textContent = liveText;
+    } else {
+      liveIndicator.style.display = 'none';
+    }
+  } catch(e) {}
+}
+
+// 60초마다 폴링
+checkLive();
+setInterval(checkLive, 60000);
+
+const SUPABASE_URL = 'https://xnknkqvmqntxdwcsqmbj.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhua25rcXZtcW50eGR3Y3NxbWJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNDkwOTYsImV4cCI6MjA5NjgyNTA5Nn0.p_zgPHCauTsSZW24l1XlZxeHrCZzmir0ALSqsrQ-wSc';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const STREAM_DAYS = new Set([0, 1, 3, 4, 5, 6]); // 일월수목금토
+const STREAM_DAYS_SET = STREAM_DAYS;
+const WEEKDAY_KO = ['일', '월', '화', '수', '목', '금', '토'];
+const MONTH_KO = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+
+let cur = new Date(); cur.setDate(1);
+let scheduleMap = {}; // 'YYYY-MM-DD' → schedule row
+
+function dateKey(y, m, d) {
+  return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+
+function isSameDay(a, b) {
+  return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+}
+
+async function loadSchedules() {
+  const year = cur.getFullYear();
+  const month = cur.getMonth();
+  const from = dateKey(year, month, 1);
+  const to   = dateKey(year, month, new Date(year, month+1, 0).getDate());
+  const { data } = await sb.from('schedules').select('*').gte('date', from).lte('date', to);
+  scheduleMap = {};
+  (data || []).forEach(r => { scheduleMap[r.date] = r; });
+  renderCalendar();
+  renderUpcoming();
+}
+
+function renderCalendar() {
+  const today = new Date();
+  const year = cur.getFullYear();
+  const month = cur.getMonth();
+  document.getElementById('month-label').textContent = year + '년 ' + MONTH_KO[month];
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const prevDays = new Date(year, month, 0).getDate();
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+
+  const cells = [];
+  for (let i = firstDay-1; i >= 0; i--) cells.push({ day: prevDays-i, month: month-1, year, other: true });
+  for (let d = 1; d <= daysInMonth; d++) cells.push({ day: d, month, year, other: false });
+  const rem = 7 - (cells.length % 7);
+  if (rem < 7) for (let d = 1; d <= rem; d++) cells.push({ day: d, month: month+1, year, other: true });
+
+  cells.forEach(c => {
+    const date = new Date(c.year, c.month, c.day);
+    const dow = date.getDay();
+    const isToday = isSameDay(date, today);
+    const key = dateKey(c.year, c.month, c.day);
+    const sched = !c.other ? scheduleMap[key] : null;
+
+    const isOffDay = dow === 2; // 화요일 기본 휴방
+    // DB에 normal/special 있으면 휴방 아님, DB holiday면 휴방, DB 없고 화요일이면 휴방
+    const isHoliday = sched ? sched.status === 'holiday' : isOffDay;
+    const isSpecial = sched && sched.status === 'special';
+    // 방송: 정기요일이거나, 화요일이라도 DB에 normal/special 있으면 표시
+    const hasStream = !c.other && !isHoliday && (STREAM_DAYS.has(dow) || (sched && sched.status !== 'holiday'));
+    const isLive = isToday && hasStream && isLiveNow;
+    // 클릭 가능: 방송 있는 날 OR 휴방인 날(사유 표시)
+    const isAnniv = sched?.status === 'anniversary';
+    const isClickable = !c.other && (hasStream || isHoliday || isAnniv);
+
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell'
+      + (c.other ? ' other-month' : '')
+      + (isToday ? ' today' : '')
+      + (hasStream || isClickable ? ' has-stream' : '')
+      + (isLive ? ' live' : '')
+      + (isHoliday && !isSpecial ? ' holiday' : '')
+      + (isSpecial ? ' special' : '')
+      + (sched?.status === 'anniversary' ? ' anniversary' : '');
+
+    const numClass = dow===0 ? ' day-num-sun' : dow===6 ? ' day-num-sat' : '';
+    let inner = `<span class="cal-day-num${numClass}">${c.day}</span>`;
+
+    if (!c.other) {
+      if (isHoliday && !isSpecial) {
+        inner += `<span class="stream-chip stream-chip-holiday">휴방</span>`;
+      } else if (hasStream) {
+        if (isLive) {
+          inner += `<span class="stream-chip stream-chip-live"><span class="live-dot"></span>LIVE</span>`;
+        } else if (isSpecial) {
+          // 특별방송: slot 내용 표시
+          if (sched.slot1_title) inner += `<span class="stream-chip stream-chip-1" style="background:#E0F2FE;color:#0369A1">${sched.slot1_title}</span>`;
+          if (sched.slot2_title) inner += `<span class="stream-chip stream-chip-2" style="background:#BAE6FD;color:#0369A1">${sched.slot2_title}</span>`;
+          if (!sched.slot1_title && !sched.slot2_title) inner += `<span class="stream-chip" style="background:#E0F2FE;color:#0369A1">특별 방송</span>`;
+        } else {
+          // anniversary 포함 일반 방송 - slot null이면 해당 부 없음
+          const show1 = sched?.slot1_title !== null || sched === null || isAnniv;
+          const show2 = sched?.slot2_title !== null || sched === null || isAnniv;
+          const t1 = sched?.slot1_time || '11:30';
+          const t2 = sched?.slot2_time || '19:00';
+          if (show1) inner += `<span class="stream-chip stream-chip-1">${t1}</span>`;
+          if (show2) inner += `<span class="stream-chip stream-chip-2">${t2}</span>`;
+        }
+      }
+    }
+
+    cell.innerHTML = inner;
+
+    if (!c.other) {
+      cell.style.cursor = 'pointer';
+      cell.addEventListener('click', (e) => openModal(e, c.year, c.month, c.day, dow, sched, isLive, isHoliday, isSpecial, isOffDay, isAnniv));
+    }
+
+    grid.appendChild(cell);
+  });
+}
+
+function openModal(e, year, month, day, dow, sched, isLive, isHoliday, isSpecial, isOffDay, isAnniv) {
+  const dateStr = `${month+1}월 ${day}일 (${WEEKDAY_KO[dow]})`;
+  document.getElementById('modal-date').textContent = dateStr;
+
+  // 빈 날 (방송도 없고 sched도 없음)
+  if (!sched && !isHoliday && !isOffDay && !isAnniv && STREAM_DAYS_SET.has(dow)) {
+    document.getElementById('modal-title').textContent = '정기 방송';
+    document.getElementById('modal-slots').innerHTML = `
+      <div class="modal-slot">
+        <span class="modal-slot-badge badge-slot-1">1부</span>
+        <div><p class="modal-slot-text">정기 방송</p><p class="modal-slot-time">11:30 ~</p></div>
+      </div>
+      <div class="modal-slot">
+        <span class="modal-slot-badge badge-slot-2">2부</span>
+        <div><p class="modal-slot-text">정기 방송</p><p class="modal-slot-time">19:00 ~</p></div>
+      </div>`;
+    // 클릭한 셀 기준 위치
+    document.getElementById('modal-overlay').classList.add('open');
+    return;
+  }
+
+  let title, slotsHTML;
+
+  if (isHoliday && !isSpecial) {
+    title = '휴방';
+    const reason = sched?.note || (isOffDay ? '정기 휴방이에요' : '개인 사정으로 방송이 없는 날이에요');
+    slotsHTML = `<div class="modal-slot">
+      <span class="modal-slot-badge badge-holiday">휴방</span>
+      <div><p class="modal-slot-text">${reason}</p></div>
+    </div>`;
+  } else if (isLive) {
+    title = '🔴 방송 중';
+    const broadTitle = liveData?.title || null;
+    slotsHTML = broadTitle
+      ? `<div class="modal-slot"><p class="modal-slot-text" style="font-size:14px;font-weight:500">${broadTitle}</p></div>`
+      : `<div class="modal-slot"><p class="modal-slot-text">방송이 진행 중이에요</p></div>`;
+  } else {
+    title = isSpecial ? '✨ 특별 방송' : isAnniv ? ('🎉 ' + (sched?.note || '기념일')) : '정기 방송';
+    const note = (!isAnniv && sched?.note) ? `<p style="font-size:12px;color:var(--text-muted);margin-top:6px">${sched.note}</p>` : '';
+    // slot null = 해당 부 없음, 기념일이면 무조건 둘 다 표시
+    const hasSlot1 = isAnniv || sched === null || sched.slot1_title !== null;
+    const hasSlot2 = isAnniv || sched === null || sched.slot2_title !== null;
+    const s1 = sched?.slot1_title || '정기 방송';
+    const s2 = sched?.slot2_title || '정기 방송';
+    let parts = '';
+    if (hasSlot1) parts += `<div class="modal-slot">
+        <span class="modal-slot-badge badge-slot-1">1부</span>
+        <div><p class="modal-slot-text">${s1}</p><p class="modal-slot-time">${sched?.slot1_time || '11:30'} ~</p></div>
+      </div>`;
+    if (hasSlot2) parts += `<div class="modal-slot">
+        <span class="modal-slot-badge badge-slot-2">2부</span>
+        <div><p class="modal-slot-text">${s2}</p><p class="modal-slot-time">${sched?.slot2_time || '19:00'} ~</p></div>
+      </div>`;
+    slotsHTML = parts + note;
+  }
+
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-slots').innerHTML = slotsHTML;
+  // 클릭한 셀 기준 위치
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('modal-overlay') && e.target !== document.querySelector('.modal-close')) return;
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.getElementById('modal-overlay').classList.remove('open'); });
+
+function renderUpcoming() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const list = document.getElementById('upcoming-list');
+  list.innerHTML = '';
+  let count = 0, d = new Date(today);
+
+  while (count < 5) {
+    const dow = d.getDay();
+    const key = dateKey(d.getFullYear(), d.getMonth(), d.getDate());
+    const sched = scheduleMap[key];
+    const isHoliday = sched?.status === 'holiday';
+
+    const upSched = scheduleMap[dateKey(d.getFullYear(), d.getMonth(), d.getDate())];
+    const upSpecialOffday = !STREAM_DAYS.has(dow) && upSched && upSched.status === 'special';
+    if (STREAM_DAYS.has(dow) || upSpecialOffday) {
+      const isToday = isSameDay(d, today);
+      const mo = d.getMonth()+1, da = d.getDate();
+      const item = document.createElement('div');
+      const upIsSpecial = upSched?.status === 'special';
+      const upIsAnniv = upSched?.status === 'anniversary';
+      item.className = 'upcoming-item'
+        + (isHoliday ? ' upcoming-holiday' : '')
+        + (upIsSpecial ? ' upcoming-special' : '')
+        + (upIsAnniv ? ' upcoming-anniv' : '');
+
+      const _us = upSched;
+      const has1 = !_us || _us.slot1_title !== null;
+      const has2 = !_us || _us.slot2_title !== null;
+      const s1 = _us?.slot1_title || '정기 방송';
+      const s2 = _us?.slot2_title || '정기 방송';
+      const t1 = _us?.slot1_time || '11:30';
+      const t2 = _us?.slot2_time || '19:00';
+      const _parts = [];
+      if (has1) _parts.push(`${t1}${s1 !== '정기 방송' ? ' : '+s1 : ''}`);
+      if (has2) _parts.push(`${t2}${s2 !== '정기 방송' ? ' : '+s2 : ''}`);
+      const timeText = isHoliday
+        ? (_us?.note || '이 날은 휴방이에요')
+        : _parts.join(' &nbsp;·&nbsp; ');
+      const badge = isHoliday
+        ? `<span class="upcoming-badge badge-holi">휴방</span>`
+        : isToday
+          ? `<span class="upcoming-badge badge-live"><span class="live-dot"></span>오늘</span>`
+          : `<span class="upcoming-badge badge-1">예정</span>`;
+
+      item.innerHTML = `
+        <div class="upcoming-date-box">
+          <span class="d-month">${mo}월</span>
+          <span class="d-day">${da}</span>
+        </div>
+        <div class="upcoming-info">
+          <p class="upcoming-day-label">${isToday ? '오늘 · ' : ''}${WEEKDAY_KO[dow]}요일</p>
+          <p class="upcoming-title">${isHoliday ? '휴방' : upIsAnniv ? '🎉 ' + (upSched?.note || '기념일') : upIsSpecial ? '✨ 특별 방송' : '정기 방송'}</p>
+          <p class="upcoming-time">${timeText}</p>
+        </div>
+        ${badge}`;
+      list.appendChild(item);
+      count++;
+    }
+    d.setDate(d.getDate()+1);
+    if (count > 30) break; // 안전장치
+  }
+}
+
+document.getElementById('prev-month').addEventListener('click', () => { cur.setMonth(cur.getMonth()-1); loadSchedules(); });
+document.getElementById('next-month').addEventListener('click', () => { cur.setMonth(cur.getMonth()+1); loadSchedules(); });
+
+loadSchedules();
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
+</div><!--/page-->
+</body>
+</html>
