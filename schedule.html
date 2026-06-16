@@ -590,7 +590,9 @@ function renderUpcoming() {
   list.innerHTML = ''; list.classList.remove('stagger'); void list.offsetWidth; list.classList.add('stagger');
   let count = 0, d = new Date(today);
 
-  while (count < 7) {
+  let daysScan = 0;
+  while (count < 7 && daysScan < 60) {
+    daysScan++;
     const dow = d.getDay();
     const key = dateKey(d.getFullYear(), d.getMonth(), d.getDate());
     const sched = scheduleMap[key];
@@ -644,7 +646,6 @@ function renderUpcoming() {
       count++;
     }
     d.setDate(d.getDate()+1);
-    if (count > 30) break; // 안전장치
   }
 }
 
