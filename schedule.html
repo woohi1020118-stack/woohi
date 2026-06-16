@@ -492,13 +492,13 @@ function renderCalendar() {
           if (sched.slot1_title) inner += `<span class="stream-chip stream-chip-1" style="background:#E0F2FE;color:#0369A1">${sched.slot1_title}</span>`;
           if (sched.slot2_title) inner += `<span class="stream-chip stream-chip-2" style="background:#BAE6FD;color:#0369A1">${sched.slot2_title}</span>`;
           if (!sched.slot1_title && !sched.slot2_title) inner += `<span class="stream-chip" style="background:#E0F2FE;color:#0369A1">특별 방송</span>`;
-        } else {
-          const show1 = sched?.slot1_title !== null || sched === null || isAnniv;
-          const show2 = sched?.slot2_title !== null || sched === null || isAnniv;
-          const t1 = sched?.slot1_time || '11:30';
-          const t2 = sched?.slot2_time || '19:00';
-          const l1 = sched?.slot1_title ? `${t1} ${sched.slot1_title}` : t1;
-          const l2 = sched?.slot2_title ? `${t2} ${sched.slot2_title}` : t2;
+        } else if (sched) {
+          const show1 = sched.slot1_title !== null;
+          const show2 = sched.slot2_title !== null;
+          const t1 = sched.slot1_time || '11:30';
+          const t2 = sched.slot2_time || '19:00';
+          const l1 = sched.slot1_title ? `${t1} ${sched.slot1_title}` : t1;
+          const l2 = sched.slot2_title ? `${t2} ${sched.slot2_title}` : t2;
           if (show1) inner += `<span class="stream-chip stream-chip-1">${l1}</span>`;
           if (show2) inner += `<span class="stream-chip stream-chip-2">${l2}</span>`;
         }
