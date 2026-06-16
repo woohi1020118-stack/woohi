@@ -599,7 +599,8 @@ function renderUpcoming() {
 
     const upSched = scheduleMap[dateKey(d.getFullYear(), d.getMonth(), d.getDate())];
     const upSpecialOffday = !STREAM_DAYS.has(dow) && upSched && upSched.status === 'special';
-    if (STREAM_DAYS.has(dow) || upSpecialOffday) {
+    const upIsAnnivDay = upSched?.status === 'anniversary';
+    if (STREAM_DAYS.has(dow) || upSpecialOffday || upIsAnnivDay) {
       const isToday = isSameDay(d, today);
       const mo = d.getMonth()+1, da = d.getDate();
       const item = document.createElement('div');
@@ -641,7 +642,7 @@ function renderUpcoming() {
         </div>
         ${badge}`;
       list.appendChild(item);
-      count++;
+      if (!isHoliday) count++;
     }
     d.setDate(d.getDate()+1);
     if (count > 30) break; // 안전장치
