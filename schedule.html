@@ -478,6 +478,10 @@ function renderCalendar() {
     let inner = `<span class="cal-day-num${numClass}">${c.day}</span><div style="overflow:hidden;flex:1;display:flex;flex-direction:column;gap:0">`;
 
     if (!c.other) {
+      if (isAnniv) {
+        const annivLabel = sched?.note || '기념일';
+        inner += `<span class="stream-chip stream-chip-anniv">🎉 ${annivLabel}</span>`;
+      }
       if (isHoliday && !isSpecial) {
         inner += `<span class="stream-chip stream-chip-holiday">휴방</span>`;
       } else if (hasStream) {
@@ -489,11 +493,6 @@ function renderCalendar() {
           if (sched.slot2_title) inner += `<span class="stream-chip stream-chip-2" style="background:#BAE6FD;color:#0369A1">${sched.slot2_title}</span>`;
           if (!sched.slot1_title && !sched.slot2_title) inner += `<span class="stream-chip" style="background:#E0F2FE;color:#0369A1">특별 방송</span>`;
         } else {
-          // anniversary: 기념일 chip + slot 표시
-          if (isAnniv) {
-            const annivLabel = sched?.note || '기념일';
-            inner += `<span class="stream-chip stream-chip-anniv">🎉 ${annivLabel}</span>`;
-          }
           const show1 = sched?.slot1_title !== null || sched === null || isAnniv;
           const show2 = sched?.slot2_title !== null || sched === null || isAnniv;
           const t1 = sched?.slot1_time || '11:30';
@@ -591,7 +590,7 @@ function renderUpcoming() {
   list.innerHTML = ''; list.classList.remove('stagger'); void list.offsetWidth; list.classList.add('stagger');
   let count = 0, d = new Date(today);
 
-  while (count < 5) {
+  while (count < 7) {
     const dow = d.getDay();
     const key = dateKey(d.getFullYear(), d.getMonth(), d.getDate());
     const sched = scheduleMap[key];
@@ -642,7 +641,7 @@ function renderUpcoming() {
         </div>
         ${badge}`;
       list.appendChild(item);
-      if (!isHoliday) count++;
+      count++;
     }
     d.setDate(d.getDate()+1);
     if (count > 30) break; // 안전장치
