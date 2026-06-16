@@ -599,7 +599,7 @@ function renderUpcoming() {
     const upSched = scheduleMap[dateKey(d.getFullYear(), d.getMonth(), d.getDate())];
     const upSpecialOffday = !STREAM_DAYS.has(dow) && upSched && upSched.status === 'special';
     const upIsAnnivDay = upSched?.status === 'anniversary';
-    if (STREAM_DAYS.has(dow) || upSpecialOffday || upIsAnnivDay) {
+    if ((STREAM_DAYS.has(dow) || upSpecialOffday || upIsAnnivDay) && upSched) {
       const isToday = isSameDay(d, today);
       const mo = d.getMonth()+1, da = d.getDate();
       const item = document.createElement('div');
