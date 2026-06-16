@@ -1,4 +1,4 @@
-const PUBLIC_URL = ""; // ← R2 버킷 생성 후 https://pub-xxxx.r2.dev 채우기
+const PUBLIC_URL = "https://pub-088f85302f6746b0ba06798498de0413.r2.dev";
 const CORS = { "Access-Control-Allow-Origin":"*", "Access-Control-Allow-Methods":"GET, OPTIONS", "Access-Control-Allow-Headers":"Content-Type, X-Key" };
 export async function onRequestGet({ request, env }) {
   const url = new URL(request.url);
