@@ -438,7 +438,7 @@ function renderCalendar() {
   const daysInMonth = new Date(year, month+1, 0).getDate();
   const prevDays = new Date(year, month, 0).getDate();
   const grid = document.getElementById('cal-grid');
-  grid.innerHTML = ''; grid.classList.remove('stagger'); void grid.offsetWidth; grid.classList.add('stagger');
+  grid.innerHTML = '';
 
   const cells = [];
   for (let i = firstDay-1; i >= 0; i--) cells.push({ day: prevDays-i, month: month-1, year, other: true });
