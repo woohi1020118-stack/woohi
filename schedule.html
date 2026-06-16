@@ -240,6 +240,25 @@
     .rail-inner::before{display:none}
     .tab::after{display:none}
   }
+
+  /* ── 스태거 애니메이션 ── */
+  @keyframes staggerIn {
+    from { opacity:0; transform:translateY(18px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .stagger > * {
+    opacity:0;
+    animation: staggerIn .4s ease forwards;
+  }
+  .stagger > *:nth-child(1){animation-delay:.04s}
+  .stagger > *:nth-child(2){animation-delay:.08s}
+  .stagger > *:nth-child(3){animation-delay:.12s}
+  .stagger > *:nth-child(4){animation-delay:.16s}
+  .stagger > *:nth-child(5){animation-delay:.20s}
+  .stagger > *:nth-child(6){animation-delay:.24s}
+  .stagger > *:nth-child(7){animation-delay:.28s}
+  .stagger > *:nth-child(8){animation-delay:.32s}
+  .stagger > *:nth-child(n+9){animation-delay:.36s}
 </style>
 </head>
 <body>
@@ -419,7 +438,7 @@ function renderCalendar() {
   const daysInMonth = new Date(year, month+1, 0).getDate();
   const prevDays = new Date(year, month, 0).getDate();
   const grid = document.getElementById('cal-grid');
-  grid.innerHTML = '';
+  grid.innerHTML = ''; grid.classList.remove('stagger'); void grid.offsetWidth; grid.classList.add('stagger');
 
   const cells = [];
   for (let i = firstDay-1; i >= 0; i--) cells.push({ day: prevDays-i, month: month-1, year, other: true });
@@ -563,7 +582,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') document.get
 function renderUpcoming() {
   const today = new Date(); today.setHours(0,0,0,0);
   const list = document.getElementById('upcoming-list');
-  list.innerHTML = '';
+  list.innerHTML = ''; list.classList.remove('stagger'); void list.offsetWidth; list.classList.add('stagger');
   let count = 0, d = new Date(today);
 
   while (count < 5) {
@@ -622,6 +641,8 @@ function renderUpcoming() {
     if (count > 30) break; // 안전장치
   }
 }
+
+function applyStagger(id){const el=document.getElementById(id);if(el){el.classList.remove('stagger');void el.offsetWidth;el.classList.add('stagger');}}
 
 document.getElementById('prev-month').addEventListener('click', () => { cur.setMonth(cur.getMonth()-1); loadSchedules(); });
 document.getElementById('next-month').addEventListener('click', () => { cur.setMonth(cur.getMonth()+1); loadSchedules(); });

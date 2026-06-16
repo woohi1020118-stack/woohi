@@ -124,6 +124,25 @@
     .rail-inner::before{display:none}
     .tab::after{display:none}
   }
+
+  /* ── 스태거 애니메이션 ── */
+  @keyframes staggerIn {
+    from { opacity:0; transform:translateY(18px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .stagger > * {
+    opacity:0;
+    animation: staggerIn .4s ease forwards;
+  }
+  .stagger > *:nth-child(1){animation-delay:.04s}
+  .stagger > *:nth-child(2){animation-delay:.08s}
+  .stagger > *:nth-child(3){animation-delay:.12s}
+  .stagger > *:nth-child(4){animation-delay:.16s}
+  .stagger > *:nth-child(5){animation-delay:.20s}
+  .stagger > *:nth-child(6){animation-delay:.24s}
+  .stagger > *:nth-child(7){animation-delay:.28s}
+  .stagger > *:nth-child(8){animation-delay:.32s}
+  .stagger > *:nth-child(n+9){animation-delay:.36s}
 </style>
 </head>
 <body>
