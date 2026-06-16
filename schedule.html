@@ -455,7 +455,7 @@ function renderCalendar() {
 
     const isOffDay = dow === 2; // 화요일 기본 휴방
     // DB에 normal/special 있으면 휴방 아님, DB holiday면 휴방, DB 없고 화요일이면 휴방
-    const isHoliday = sched ? sched.status === 'holiday' : isOffDay;
+    const isHoliday = !!sched && sched.status === 'holiday';
     const isSpecial = sched && sched.status === 'special';
     // 방송: 정기요일이거나, 화요일이라도 DB에 normal/special 있으면 표시
     const hasStream = !c.other && !isHoliday && sched && sched.status !== 'holiday';
