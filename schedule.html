@@ -61,7 +61,7 @@
   .cal-weekday.sat { color: #88A8E8; }
   .cal-grid { display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; }
 
-  .cal-cell { height:120px; border-radius:12px; padding:10px 10px 8px; border:1px solid var(--gray-200); background:var(--white); transition:border-color .15s, box-shadow .15s, transform .15s; position:relative; overflow:hidden; }
+  .cal-cell { height:120px; border-radius:12px; padding:10px 10px 8px; border:1px solid var(--gray-200); background:var(--white); transition:border-color .15s, box-shadow .15s, transform .15s; position:relative; overflow:hidden; display:flex; flex-direction:column; }
   .cal-cell.other-month { background:var(--gray-100); opacity:.45; }
   .cal-cell.today { border-color:var(--mint); background:var(--mint-pale); }
   .cal-cell.has-stream { cursor:pointer; }
@@ -89,7 +89,7 @@
 
   @keyframes pulse-border { 0%,100%{box-shadow:0 0 0 0 rgba(244,114,182,0)} 50%{box-shadow:0 0 0 4px rgba(244,114,182,.15)} }
 
-  .cal-day-num { font-size:13px; font-weight:500; color:var(--text); display:block; margin-bottom:6px; }
+  .cal-day-num { font-size:13px; font-weight:500; color:var(--text); display:block; margin-bottom:4px; flex:none; }
   .cal-cell.other-month .cal-day-num { color:var(--gray-400); }
   .cal-cell.today .cal-day-num { color:var(--mint-deep); font-weight:700; }
   .day-num-sun { color:#E88888 !important; }
@@ -171,10 +171,10 @@
   .upcoming-item.upcoming-holiday .upcoming-date-box { background:#FFF3D0; border-color:#FFD6A0; }
   .d-month { font-size:10px; color:var(--mint-dark); font-weight:600; letter-spacing:.04em; }
   .d-day { font-family:'Pretendard',serif; font-size:20px; color:var(--mint-deep); line-height:1; }
-  .upcoming-info { flex:1; }
+  .upcoming-info { flex:1; min-width:0; overflow:hidden; }
   .upcoming-day-label { font-size:11px; color:var(--text-muted); margin-bottom:2px; }
-  .upcoming-title { font-size:14px; font-weight:500; color:var(--text); margin-bottom:3px; }
-  .upcoming-time { font-size:12px; color:var(--mint-dark); }
+  .upcoming-title { font-size:14px; font-weight:500; color:var(--text); margin-bottom:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .upcoming-time { font-size:12px; color:var(--mint-dark); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%; }
   .upcoming-badge { font-size:11px; padding:4px 10px; border-radius:20px; font-weight:600; flex-shrink:0; }
   .badge-1 { background:var(--mint-pale); color:var(--mint-deep); border:1px solid var(--mint); }
   .badge-2 { background:var(--lavender-light); color:#5B4BA8; border:1px solid var(--lavender); }
@@ -475,7 +475,7 @@ function renderCalendar() {
       + (sched?.status === 'anniversary' ? ' anniversary' : '');
 
     const numClass = dow===0 ? ' day-num-sun' : dow===6 ? ' day-num-sat' : '';
-    let inner = `<span class="cal-day-num${numClass}">${c.day}</span>`;
+    let inner = `<span class="cal-day-num${numClass}">${c.day}</span><div style="overflow:hidden;flex:1;display:flex;flex-direction:column;gap:0">`;
 
     if (!c.other) {
       if (isHoliday && !isSpecial) {
@@ -500,7 +500,7 @@ function renderCalendar() {
       }
     }
 
-    cell.innerHTML = inner;
+    inner += '</div>'; cell.innerHTML = inner;
 
     if (!c.other) {
       cell.style.cursor = 'pointer';
