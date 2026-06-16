@@ -246,7 +246,7 @@
     from { opacity:0; transform:translateY(18px); }
     to   { opacity:1; transform:translateY(0); }
   }
-  .stagger > * {
+  .stagger > *:not(.cal-cell) {
     opacity:0;
     animation: staggerIn .4s ease forwards;
   }
