@@ -458,7 +458,7 @@ function renderCalendar() {
     const isHoliday = sched ? sched.status === 'holiday' : isOffDay;
     const isSpecial = sched && sched.status === 'special';
     // 방송: 정기요일이거나, 화요일이라도 DB에 normal/special 있으면 표시
-    const hasStream = !c.other && !isHoliday && (STREAM_DAYS.has(dow) || (sched && sched.status !== 'holiday'));
+    const hasStream = !c.other && !isHoliday && sched && sched.status !== 'holiday';
     const isLive = isToday && hasStream && isLiveNow;
     // 클릭 가능: 방송 있는 날 OR 휴방인 날(사유 표시)
     const isAnniv = sched?.status === 'anniversary';
@@ -594,7 +594,7 @@ function renderUpcoming() {
     const dow = d.getDay();
     const key = dateKey(d.getFullYear(), d.getMonth(), d.getDate());
     const sched = scheduleMap[key];
-    const isHoliday = sched?.status === 'holiday';
+    const isHoliday = !!sched && sched.status === 'holiday';
 
     const upSched = scheduleMap[dateKey(d.getFullYear(), d.getMonth(), d.getDate())];
     const upSpecialOffday = !STREAM_DAYS.has(dow) && upSched && upSched.status === 'special';
