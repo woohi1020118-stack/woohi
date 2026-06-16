@@ -1,148 +1,128 @@
--- songs 테이블 생성
-create table if not exists public.songs (
-  id       uuid primary key default gen_random_uuid(),
-  artist   text not null,
-  title    text not null,
-  genre    text default 'etc',   -- kpop | jpop | pop | indie | folk | etc
-  level    int  default 0,       -- 0~5 숙련도
-  memo     text default '',
-  created_at timestamptz default now()
+-- =============================================
+-- 우히 Supabase 전체 스키마 (IF NOT EXISTS 안전)
+-- Supabase SQL Editor에서 전체 실행
+-- =============================================
+
+-- songs
+CREATE TABLE IF NOT EXISTS public.songs (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  artist     TEXT NOT NULL,
+  title      TEXT NOT NULL,
+  genre      TEXT DEFAULT 'etc',
+  level      INT DEFAULT 0,
+  memo       TEXT DEFAULT '',
+  sort_order INT DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
+ALTER TABLE public.songs ADD COLUMN IF NOT EXISTS sort_order INT DEFAULT 0;
+ALTER TABLE public.songs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY IF NOT EXISTS "Public read songs"  ON public.songs FOR SELECT USING (true);
+CREATE POLICY IF NOT EXISTS "Auth insert songs"  ON public.songs FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY IF NOT EXISTS "Auth update songs"  ON public.songs FOR UPDATE TO authenticated USING (true);
+CREATE POLICY IF NOT EXISTS "Auth delete songs"  ON public.songs FOR DELETE TO authenticated USING (true);
 
--- RLS 활성화
-alter table public.songs enable row level security;
-
--- 공개 읽기 (노래책 페이지에서 사용)
-create policy "Public read songs"
-  on public.songs for select
-  using (true);
-
--- 인증된 사용자만 추가/수정/삭제 (admin 페이지에서 사용)
-create policy "Auth insert songs"
-  on public.songs for insert
-  to authenticated
-  with check (true);
-
-create policy "Auth update songs"
-  on public.songs for update
-  to authenticated
-  using (true);
-
-create policy "Auth delete songs"
-  on public.songs for delete
-  to authenticated
-  using (true);
-
--- schedules 테이블 (방송 일정 특이사항)
-create table if not exists public.schedules (
-  id         uuid primary key default gen_random_uuid(),
-  date       date not null unique,           -- 날짜 (YYYY-MM-DD)
-  status     text default 'normal',          -- normal | holiday | special
-  slot1_title text,                          -- 1부 방송 내용
-  slot2_title text,                          -- 2부 방송 내용
-  note       text,                           -- 메모 / 휴방 사유
-  created_at timestamptz default now()
+-- schedules
+CREATE TABLE IF NOT EXISTS public.schedules (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  date        DATE NOT NULL UNIQUE,
+  status      TEXT DEFAULT 'normal',
+  slot1_title TEXT,
+  slot2_title TEXT,
+  slot1_time  TEXT DEFAULT '11:30',
+  slot2_time  TEXT DEFAULT '19:00',
+  note        TEXT,
+  created_at  TIMESTAMPTZ DEFAULT NOW()
 );
+ALTER TABLE public.schedules ADD COLUMN IF NOT EXISTS slot1_time TEXT DEFAULT '11:30';
+ALTER TABLE public.schedules ADD COLUMN IF NOT EXISTS slot2_time TEXT DEFAULT '19:00';
+ALTER TABLE public.schedules ENABLE ROW LEVEL SECURITY;
+CREATE POLICY IF NOT EXISTS "Public read schedules"  ON public.schedules FOR SELECT USING (true);
+CREATE POLICY IF NOT EXISTS "Auth insert schedules"  ON public.schedules FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY IF NOT EXISTS "Auth update schedules"  ON public.schedules FOR UPDATE TO authenticated USING (true);
+CREATE POLICY IF NOT EXISTS "Auth delete schedules"  ON public.schedules FOR DELETE TO authenticated USING (true);
 
-alter table public.schedules enable row level security;
-
-create policy "Public read schedules"
-  on public.schedules for select using (true);
-
-create policy "Auth insert schedules"
-  on public.schedules for insert to authenticated with check (true);
-
-create policy "Auth update schedules"
-  on public.schedules for update to authenticated using (true);
-
-create policy "Auth delete schedules"
-  on public.schedules for delete to authenticated using (true);
-
--- schedules 테이블에 시간 컬럼 추가
-alter table public.schedules
-  add column if not exists slot1_time text default '11:30',
-  add column if not exists slot2_time text default '19:00';
-
--- overlay_state 테이블
+-- overlay_state
 CREATE TABLE IF NOT EXISTS public.overlay_state (
-  id INT PRIMARY KEY DEFAULT 1 CHECK (id = 1),
-  song_title TEXT DEFAULT '',
+  id          INT PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+  song_title  TEXT DEFAULT '',
   song_artist TEXT DEFAULT '',
-  is_visible BOOLEAN DEFAULT FALSE,
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  is_visible  BOOLEAN DEFAULT FALSE,
+  updated_at  TIMESTAMPTZ DEFAULT NOW()
 );
 INSERT INTO public.overlay_state (id, song_title, song_artist, is_visible)
 VALUES (1, '', '', false) ON CONFLICT (id) DO NOTHING;
-
 ALTER TABLE public.overlay_state ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "overlay_read" ON public.overlay_state FOR SELECT USING (true);
-CREATE POLICY "overlay_update" ON public.overlay_state FOR UPDATE TO authenticated USING (true);
-CREATE POLICY "overlay_insert" ON public.overlay_state FOR INSERT TO authenticated WITH CHECK (true);
-CREATE POLICY "overlay_upsert" ON public.overlay_state FOR ALL TO authenticated USING (true);
+CREATE POLICY IF NOT EXISTS "overlay_read"   ON public.overlay_state FOR SELECT USING (true);
+CREATE POLICY IF NOT EXISTS "overlay_all"    ON public.overlay_state FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
--- 업보 테이블들
+-- upbo_task_types
 CREATE TABLE IF NOT EXISTS public.upbo_task_types (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name text NOT NULL,
-  category text DEFAULT 'normal', -- normal | event
-  created_at timestamptz DEFAULT now()
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name       TEXT NOT NULL,
+  category   TEXT DEFAULT 'normal',
+  sort_order INT DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
-CREATE TABLE IF NOT EXISTS public.upbo_members (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  nickname text NOT NULL,
-  user_id text,
-  memo text,
-  is_hidden boolean DEFAULT false,
-  created_at timestamptz DEFAULT now()
-);
-
-CREATE TABLE IF NOT EXISTS public.upbo_tasks (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  member_id uuid REFERENCES public.upbo_members(id) ON DELETE CASCADE,
-  type_id uuid REFERENCES public.upbo_task_types(id) ON DELETE CASCADE,
-  quantity int DEFAULT 1,
-  memo text,
-  created_at timestamptz DEFAULT now()
-);
-
-CREATE TABLE IF NOT EXISTS public.upbo_inquiries (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  nickname text,
-  content text,
-  created_at timestamptz DEFAULT now()
-);
-
-CREATE TABLE IF NOT EXISTS public.upbo_settings (
-  key text PRIMARY KEY,
-  value text
-);
-
--- RLS
+ALTER TABLE public.upbo_task_types ADD COLUMN IF NOT EXISTS sort_order INT DEFAULT 0;
 ALTER TABLE public.upbo_task_types ENABLE ROW LEVEL SECURITY;
+CREATE POLICY IF NOT EXISTS "public read task_types" ON public.upbo_task_types FOR SELECT USING (true);
+CREATE POLICY IF NOT EXISTS "auth all task_types"    ON public.upbo_task_types FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- upbo_members
+CREATE TABLE IF NOT EXISTS public.upbo_members (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  nickname   TEXT NOT NULL,
+  user_id    TEXT,
+  memo       TEXT,
+  is_hidden  BOOLEAN DEFAULT FALSE,
+  sort_order INT DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE public.upbo_members ADD COLUMN IF NOT EXISTS sort_order INT DEFAULT 0;
+ALTER TABLE public.upbo_members ADD COLUMN IF NOT EXISTS is_hidden  BOOLEAN DEFAULT FALSE;
 ALTER TABLE public.upbo_members ENABLE ROW LEVEL SECURITY;
+CREATE POLICY IF NOT EXISTS "public read members" ON public.upbo_members FOR SELECT USING (true);
+CREATE POLICY IF NOT EXISTS "auth all members"    ON public.upbo_members FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- upbo_tasks
+CREATE TABLE IF NOT EXISTS public.upbo_tasks (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  member_id  UUID REFERENCES public.upbo_members(id) ON DELETE CASCADE,
+  type_id    UUID REFERENCES public.upbo_task_types(id) ON DELETE CASCADE,
+  quantity   INT DEFAULT 1,
+  memo       TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
 ALTER TABLE public.upbo_tasks ENABLE ROW LEVEL SECURITY;
+CREATE POLICY IF NOT EXISTS "public read tasks" ON public.upbo_tasks FOR SELECT USING (true);
+CREATE POLICY IF NOT EXISTS "auth all tasks"    ON public.upbo_tasks FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- upbo_inquiries
+CREATE TABLE IF NOT EXISTS public.upbo_inquiries (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  nickname   TEXT,
+  content    TEXT,
+  is_read    BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE public.upbo_inquiries ADD COLUMN IF NOT EXISTS is_read BOOLEAN DEFAULT FALSE;
 ALTER TABLE public.upbo_inquiries ENABLE ROW LEVEL SECURITY;
+CREATE POLICY IF NOT EXISTS "public insert inquiries" ON public.upbo_inquiries FOR INSERT WITH CHECK (true);
+CREATE POLICY IF NOT EXISTS "auth all inquiries"      ON public.upbo_inquiries FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- upbo_settings
+CREATE TABLE IF NOT EXISTS public.upbo_settings (
+  key   TEXT PRIMARY KEY,
+  value TEXT
+);
 ALTER TABLE public.upbo_settings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY IF NOT EXISTS "public read settings" ON public.upbo_settings FOR SELECT USING (true);
+CREATE POLICY IF NOT EXISTS "auth all settings"    ON public.upbo_settings FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
-CREATE POLICY "public read task_types" ON public.upbo_task_types FOR SELECT USING (true);
-CREATE POLICY "public read members" ON public.upbo_members FOR SELECT USING (true);
-CREATE POLICY "public read tasks" ON public.upbo_tasks FOR SELECT USING (true);
-CREATE POLICY "public read settings" ON public.upbo_settings FOR SELECT USING (true);
-CREATE POLICY "public insert inquiries" ON public.upbo_inquiries FOR INSERT WITH CHECK (true);
-
-CREATE POLICY "auth all task_types" ON public.upbo_task_types FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "auth all members" ON public.upbo_members FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "auth all tasks" ON public.upbo_tasks FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "auth all settings" ON public.upbo_settings FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "auth read inquiries" ON public.upbo_inquiries FOR SELECT TO authenticated USING (true);
-
--- ─────────────────────────────────────────────
--- dress_items (옷장 / 방셀 리스트)
--- ─────────────────────────────────────────────
+-- dress_items
 CREATE TABLE IF NOT EXISTS public.dress_items (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  category    TEXT NOT NULL DEFAULT 'hair', -- hair | outfit | etc
+  category    TEXT NOT NULL DEFAULT 'hair',
   name        TEXT NOT NULL,
   description TEXT DEFAULT '',
   image_key   TEXT DEFAULT '',
@@ -155,6 +135,5 @@ CREATE TABLE IF NOT EXISTS public.dress_items (
 );
 CREATE INDEX IF NOT EXISTS idx_dress_items_category ON public.dress_items(category);
 ALTER TABLE public.dress_items ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "public read dress" ON public.dress_items FOR SELECT USING (true);
-CREATE POLICY "auth all dress"    ON public.dress_items
-  FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY IF NOT EXISTS "public read dress" ON public.dress_items FOR SELECT USING (true);
+CREATE POLICY IF NOT EXISTS "auth all dress"    ON public.dress_items FOR ALL TO authenticated USING (true) WITH CHECK (true);
