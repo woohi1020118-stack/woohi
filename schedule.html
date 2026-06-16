@@ -462,7 +462,7 @@ function renderCalendar() {
     const isLive = isToday && hasStream && isLiveNow;
     // 클릭 가능: 방송 있는 날 OR 휴방인 날(사유 표시)
     const isAnniv = sched?.status === 'anniversary';
-    const isClickable = !c.other && (hasStream || isHoliday || isAnniv);
+    const isClickable = !c.other && !!sched && (hasStream || isHoliday || isAnniv);
 
     const cell = document.createElement('div');
     cell.className = 'cal-cell'
@@ -509,7 +509,7 @@ function renderCalendar() {
 
     if (!c.other) {
       cell.style.cursor = 'pointer';
-      cell.addEventListener('click', (e) => openModal(e, c.year, c.month, c.day, dow, sched, isLive, isHoliday, isSpecial, isOffDay, isAnniv));
+      if (sched) cell.addEventListener('click', (e) => openModal(e, c.year, c.month, c.day, dow, sched, isLive, isHoliday, isSpecial, isOffDay, isAnniv));
     }
 
     grid.appendChild(cell);
