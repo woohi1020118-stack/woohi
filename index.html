@@ -95,24 +95,14 @@
   .rail-inner{position:relative;padding-right:14px}
   .rail-inner::before{
     content:'';position:absolute;top:-10px;bottom:-10px;right:0;
-    width:2.5px;background:var(--blue);border-radius:2px;
+    width:2.5px;background:#0455dc;border-radius:2px;
   }
-  .tab{
-    display:block;margin:0 0 14px auto;width:108px;text-align:center;
-    padding:11px 0;font-size:18px;font-weight:800;color:var(--blue);
-    text-decoration:none;background:var(--white);position:relative;
-    border:2.5px solid var(--blue);
-    border-radius:255px 15px 225px 15px/15px 225px 15px 255px;
-    transition:transform .18s,background .18s;
-  }
+  .tab{display:block;margin:0 0 14px auto;width:108px;text-align:center;padding:11px 0;font-size:18px;font-weight:800;color:#0455dc;text-decoration:none;background:#fff;position:relative;border:2.5px solid #0455dc;border-radius:255px 15px 225px 15px/15px 225px 15px 255px;transition:transform .18s,background .18s}
   .tab:nth-child(2n){border-radius:15px 225px 15px 255px/225px 15px 255px 15px}
   .tab:nth-child(3n){border-radius:225px 15px 255px 15px/15px 255px 15px 225px}
-  .tab::after{
-    content:'';position:absolute;right:-14px;top:50%;transform:translateY(-50%);
-    width:14px;height:2.5px;background:var(--blue);
-  }
-  .tab:hover{transform:translateX(-3px);background:var(--blue-wash)}
-  .tab.active{background:var(--blue-pale);box-shadow:inset 0 0 0 1px var(--blue)}
+  .tab::after{content:'';position:absolute;right:-14px;top:50%;transform:translateY(-50%);width:14px;height:2.5px;background:#0455dc}
+  .tab:hover{transform:translateX(-3px);background:#f4f8ff}
+  .tab.active{background:#eaf2ff;box-shadow:inset 0 0 0 1px #0455dc}
 
   /* ─── 푸터 ─── */
   footer{
