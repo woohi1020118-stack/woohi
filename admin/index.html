@@ -1093,6 +1093,10 @@
     document.getElementById('e-use-slot2').checked = use2;
     document.getElementById('e-slot1-wrap').style.opacity = use1 ? '1' : '0.4';
     document.getElementById('e-slot2-wrap').style.opacity = use2 ? '1' : '0.4';
+    document.getElementById('e-slot1').disabled = !use1;
+    document.getElementById('e-slot2').disabled = !use2;
+    document.getElementById('e-time1').disabled = !use1;
+    document.getElementById('e-time2').disabled = !use2;
     document.getElementById('e-slot1').value = sched?.slot1_title || '';
     document.getElementById('e-slot2').value = sched?.slot2_title || '';
     document.getElementById('e-time1').value = sched?.slot1_time || '11:30';
